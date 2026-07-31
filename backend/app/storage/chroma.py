@@ -26,13 +26,18 @@ class ChromaVectorStore(BaseVectorStore):
 
             documents=[c.text for c in chunks],
 
-            metadatas=[
-                {
-                    "source": c.source,
-                    "chunk": c.chunk_index
-                }
-                for c in chunks
-            ],
+          metadatas=[
+    {
+        "source": c.source,
+        "chunk": c.chunk_index,
+        **(
+            {"hkr_node": c.hkr_node_id}
+            if c.hkr_node_id is not None
+            else {}
+        )
+    }
+    for c in chunks
+],
 
             embeddings=[c.embedding for c in chunks]
 

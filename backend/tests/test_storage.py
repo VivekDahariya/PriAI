@@ -7,7 +7,7 @@ from app.storage.models import KnowledgeChunk
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 # Initialize storage
-store = ChromaVectorStore()
+store = ChromaVectorStore("test_collection")
 
 # Clear old test data (optional but recommended while testing)
 try:
@@ -15,7 +15,7 @@ try:
 except:
     pass
 
-store = ChromaVectorStore()
+store = ChromaVectorStore("test_collection")
 
 # Store a document
 text = "PriAI is an offline AI platform."

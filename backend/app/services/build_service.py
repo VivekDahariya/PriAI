@@ -6,6 +6,7 @@ from app.storage.chroma import ChromaVectorStore
 from app.storage.models import KnowledgeChunk
 from app.utils.slug import generate_ai_id
 from app.registry.manager import RegistryManager
+from app.hkr.manager import HKRManager
 
 
 class BuildService:
@@ -18,62 +19,96 @@ class BuildService:
 
         self.registry = RegistryManager()
 
+        self.hkr = HKRManager()
+
+
     def build(self, ai_name: str, files: list[str]):
 
         ai_id = generate_ai_id(ai_name)
 
+
+        # -----------------------------
+        # Create HKR Root Document
+        # -----------------------------
+
+        document = self.hkr.create_document(
+            ai_name
+        )
+
+        print(
+            f"🌳 HKR Document Created: {document.id}"
+        )
+
+
         print(f"\n🤖 Building AI: {ai_name}")
         print(f"🆔 AI ID: {ai_id}")
 
+
         store = ChromaVectorStore(ai_id)
 
+
         total_chunks = 0
+
 
         for pdf_path in files:
 
             print(f"\n📄 Loading: {pdf_path}")
 
+
             text = load_document(pdf_path)
+
 
             print("🧹 Processing...")
 
+
             chunks = process_document(text)
+
 
             print(f"📦 {len(chunks)} chunks created")
 
+
             knowledge_chunks = []
+
 
             for i, chunk in enumerate(chunks):
 
                 embedding = self.embedding_model.encode(chunk)
 
+
                 knowledge_chunks.append(
 
-                    KnowledgeChunk(
+                   KnowledgeChunk(
 
-                        id=f"{ai_id}_chunk_{total_chunks + i}",
+    id=f"{ai_id}_chunk_{total_chunks + i}",
 
-                        text=chunk,
+    text=chunk,
 
-                        source=pdf_path,
+    source=pdf_path,
 
-                        chunk_index=i,
+    chunk_index=i,
 
-                        embedding=embedding.tolist()
+    embedding=embedding.tolist(),
 
-                    )
+    hkr_node_id=document.root_node
+
+)
 
                 )
 
+
             print("💾 Storing...")
+
 
             store.add(knowledge_chunks)
 
+
             total_chunks += len(knowledge_chunks)
 
-        # ---------------------------------------------
-        # Automatic Registry Metadata
-        # ---------------------------------------------
+
+
+        # -----------------------------
+        # Dynamic Knowledge Metadata
+        # -----------------------------
 
         if total_chunks < 100:
 
@@ -81,17 +116,25 @@ class BuildService:
             suggested_top_k = 8
             suggested_threshold = 0.55
 
+
         elif total_chunks < 1000:
 
             density = "Medium"
             suggested_top_k = 6
             suggested_threshold = 0.70
 
+
         else:
 
             density = "High"
             suggested_top_k = 4
             suggested_threshold = 0.82
+
+
+
+        # -----------------------------
+        # Registry Update
+        # -----------------------------
 
         self.registry.register(
 
@@ -111,13 +154,24 @@ class BuildService:
 
         )
 
+
+
         print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
         print("✅ AI Build Completed")
+
         print(f"AI Name      : {ai_name}")
+
         print(f"AI ID        : {ai_id}")
+
         print(f"Files        : {len(files)}")
+
         print(f"Total Chunks : {total_chunks}")
+
         print(f"Density      : {density}")
+
         print(f"Top-K        : {suggested_top_k}")
+
         print(f"Threshold    : {suggested_threshold}")
+
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
