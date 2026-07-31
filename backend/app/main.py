@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 
+from app.api.build import router as build_router
+
 app = FastAPI(
-    title="PriAI Backend"
+    title="PriAI",
+    version="0.1"
 )
 
-@app.get("/")
-def home():
-    return {
-        "message": "PriAI Engine Running"
-    }
+app.include_router(build_router)
