@@ -26,33 +26,70 @@ class ChromaVectorStore(BaseVectorStore):
 
             documents=[c.text for c in chunks],
 
-          metadatas=[
-    {
-        "source": c.source,
-        "chunk": c.chunk_index,
-        **(
-            {"hkr_node": c.hkr_node_id}
-            if c.hkr_node_id is not None
-            else {}
-        )
-    }
-    for c in chunks
-],
+            metadatas=[
+                {
+                    "source": c.source,
+                    "chunk": c.chunk_index,
+                    **(
+                        {"hkr_node": c.hkr_node_id}
+                        if c.hkr_node_id is not None
+                        else {}
+                    )
+                }
+                for c in chunks
+            ],
 
             embeddings=[c.embedding for c in chunks]
 
         )
 
-    def search(self, query_embedding, top_k=5):
+    def search(
+        self,
+        query_embedding,
+        top_k=5
+    ):
 
-        return self.collection.query(
+        result = self.collection.query(
 
             query_embeddings=[query_embedding],
 
-            n_results=top_k
+            n_results=top_k,
+
+            include=[
+                "documents",
+                "metadatas",
+                "distances"
+            ]
 
         )
 
+        chunks = []
+
+        documents = result["documents"][0]
+        metadatas = result["metadatas"][0]
+        distances = result["distances"][0]
+
+        for doc, metadata, distance in zip(
+            documents,
+            metadatas,
+            distances
+        ):
+
+            chunks.append(
+
+                {
+                    "text": doc,
+                    "metadata": metadata,
+                    "distance": distance,
+                    "hkr_node_id": metadata.get("hkr_node")
+                }
+
+            )
+
+        return chunks
+
     def delete(self):
 
-        self.client.delete_collection(self.collection_name)
+        self.client.delete_collection(
+            self.collection_name
+        )

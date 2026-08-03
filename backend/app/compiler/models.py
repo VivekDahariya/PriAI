@@ -47,4 +47,4 @@ class CompiledKnowledge:
 
     units: list[KnowledgeUnit]
 
-    relations: list[KnowledgeRelation]
+    relations: list[KnowledgeRelation] = field(default_factory=list)
