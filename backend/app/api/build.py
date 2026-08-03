@@ -1,30 +1,45 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import UploadFile
+from fastapi import File
+from fastapi import Form
 
 from app.services.build_service import BuildService
+from app.utils.file_manager import save_upload
 
 router = APIRouter()
 
 builder = BuildService()
 
 
-class BuildRequest(BaseModel):
-    ai_name: str
-
-
 @router.post("/build")
-def build_ai(request: BuildRequest):
+def build_ai(
+
+    ai_name: str = Form(...),
+
+    files: list[UploadFile] = File(...)
+
+):
+
+    paths = []
+
+    for file in files:
+
+        paths.append(
+            save_upload(file)
+        )
 
     builder.build(
 
-        ai_name=request.ai_name,
+        ai_name=ai_name,
 
-        files=["sample.pdf"]
+        files=paths
 
     )
 
     return {
-        "status": "success",
-        "ai_name": request.ai_name,
-        "message": "Knowledge Base Built Successfully"
+
+        "success": True,
+
+        "message": "AI built successfully."
+
     }
