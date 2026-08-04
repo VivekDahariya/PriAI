@@ -93,3 +93,42 @@ class ChromaVectorStore(BaseVectorStore):
         self.client.delete_collection(
             self.collection_name
         )
+
+    def get_by_hkr_nodes(self, node_ids: list[str]):
+
+        if not node_ids:
+            return []
+
+        result = self.collection.get(
+            where={
+                "hkr_node": {
+                    "$in": node_ids
+                }
+            },
+            include=[
+                "documents",
+                "metadatas"
+            ]
+        )
+
+        chunks = []
+
+        documents = result.get("documents", [])
+        metadatas = result.get("metadatas", [])
+
+        for doc, metadata in zip(
+            documents,
+            metadatas
+        ):
+
+            chunks.append(
+                {
+                    "text": doc,
+                    "source": metadata.get("source"),
+                    "chunk": metadata.get("chunk"),
+                    "hkr_node_id": metadata.get("hkr_node")
+                }
+            )
+
+        return chunks
+
