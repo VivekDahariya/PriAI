@@ -1,7 +1,18 @@
 from app.retrieval.graph_retriever import GraphRetriever
+from app.compiler.relation_store import RelationStore
 
+
+store = RelationStore()
 
 graph = GraphRetriever()
+
+
+relations = store.load(
+    "computer_science"
+)
+
+
+start_node = "9e249280-49c7-4af4-aba3-d03a70fa3836"
 
 
 nodes = graph.expand(
@@ -9,7 +20,7 @@ nodes = graph.expand(
     "computer_science",
 
     [
-        "9e4da266-0fb4-40c8-a40e-d3cf9d2b0691"
+        start_node
     ],
 
     hops=1
@@ -19,6 +30,13 @@ nodes = graph.expand(
 
 print("\nGRAPH INTELLIGENCE RESULTS")
 print("-" * 40)
+
+
+print("START NODE")
+print(start_node)
+
+print()
+
 
 for node in nodes:
 
@@ -32,6 +50,14 @@ for node in nodes:
 
     print(
         f"Relation: {node['relation']}"
+    )
+
+    print(
+        f"Weight: {node['weight']}"
+    )
+
+    print(
+        f"Confidence: {node['confidence']}"
     )
 
     print()

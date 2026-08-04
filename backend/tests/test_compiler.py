@@ -6,15 +6,15 @@ compiled = compiler.compile(
 
     document_name="Machine Learning",
 
-    chunks=[
+   chunks = [
 
-        "Neural Networks",
+    "Neural Networks are trained using Gradient Descent",
 
-        "Gradient Descent",
+    "Loss Function is optimized by Gradient Descent",
 
-        "Loss Function"
+    "Gradient Descent requires learning rate"
 
-    ]
+]
 
 )
 

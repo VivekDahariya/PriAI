@@ -45,23 +45,27 @@ class RetrievalService:
 
 
         # -----------------------------
-        # HKR Graph Expansion
+        # Extract HKR nodes
         # -----------------------------
 
         node_ids = []
 
         for result in results:
 
-            hkr_node_id = result.get(
+            node_id = result.get(
                 "hkr_node_id"
             )
 
-            if hkr_node_id:
+            if node_id:
 
                 node_ids.append(
-                    hkr_node_id
+                    node_id
                 )
 
+
+        # -----------------------------
+        # Weighted HKR Expansion
+        # -----------------------------
 
         expanded_nodes = []
 
@@ -75,22 +79,37 @@ class RetrievalService:
             )
 
 
+        print("\n========== GRAPH EXPANSION ==========")
+
+        for node in expanded_nodes:
+            print(node)
+
+        print("====================================\n")
+
+
         # -----------------------------
-        # Fetch graph connected chunks
+        # Convert graph results
+        # into Chroma lookup IDs
         # -----------------------------
+
+        expanded_node_ids = [
+
+            node["node_id"]
+
+            for node in expanded_nodes
+
+        ]
+
 
         graph_chunks = []
 
-        if expanded_nodes:
+
+        if expanded_node_ids:
 
             graph_chunks = store.get_by_hkr_nodes(
-                expanded_nodes
+                expanded_node_ids
             )
 
-
-        print("\n========== GRAPH EXPANSION ==========")
-
-        print(expanded_nodes)
 
         print("\n========== GRAPH CHUNKS ==========")
 
@@ -106,18 +125,24 @@ class RetrievalService:
         existing_nodes = set()
 
 
+
         # -----------------------------
         # Vector Results
         # -----------------------------
 
         for result in results:
 
+
             node_id = result.get(
                 "hkr_node_id"
             )
 
+
             if node_id:
-                existing_nodes.add(node_id)
+
+                existing_nodes.add(
+                    node_id
+                )
 
 
             metadata = result.get(
@@ -145,48 +170,84 @@ class RetrievalService:
 
                     "hkr_node_id": node_id,
 
-                    "graph_context": expanded_nodes,
+                    "from_graph": False,
 
-                    "from_graph": False
+                    "graph_context": expanded_nodes
 
                 }
 
             )
 
 
+
         # -----------------------------
-        # HKR Expanded Results
+        # Graph Expanded Chunks
         # -----------------------------
 
         for chunk in graph_chunks:
+
 
             node_id = chunk.get(
                 "hkr_node_id"
             )
 
 
-            if node_id not in existing_nodes:
+            if node_id in existing_nodes:
 
-                retrieved.append(
+                continue
 
-                    {
-                        "text": chunk["text"],
 
-                        "source": chunk["source"],
 
-                        "chunk": chunk["chunk"],
+            graph_metadata = next(
 
-                        "distance": None,
+                (
+                    node
+                    for node in expanded_nodes
+                    if node["node_id"] == node_id
+                ),
 
-                        "hkr_node_id": node_id,
+                {}
 
-                        "graph_context": expanded_nodes,
+            )
 
-                        "from_graph": True
 
-                    }
+            retrieved.append(
 
-                )
+                {
+
+                    "text": chunk["text"],
+
+                    "source": chunk.get(
+                        "source"
+                    ),
+
+                    "chunk": chunk.get(
+                        "chunk"
+                    ),
+
+                    "distance": None,
+
+                    "hkr_node_id": node_id,
+
+                    "from_graph": True,
+
+                    "graph_relation": graph_metadata.get(
+                        "relation"
+                    ),
+
+                    "graph_weight": graph_metadata.get(
+                        "weight"
+                    ),
+
+                    "graph_confidence": graph_metadata.get(
+                        "confidence"
+                    ),
+
+                    "graph_context": expanded_nodes
+
+                }
+
+            )
 
 
         return retrieved

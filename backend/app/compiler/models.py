@@ -35,6 +35,17 @@ class KnowledgeRelation:
 
     target: str
 
+    # Relationship strength
+    weight: float = 1.0
+
+    # Extraction confidence
+    confidence: float = 1.0
+
+    # Entity types
+    source_type: str = "node"
+
+    target_type: str = "node"
+
 
 @dataclass
 class CompiledKnowledge:

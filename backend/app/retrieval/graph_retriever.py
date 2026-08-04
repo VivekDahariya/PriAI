@@ -16,6 +16,7 @@ class GraphRetriever:
         ai_id: str,
         node_ids: list[str],
         hops: int = 1,
+        min_weight: float = 0.5,
         max_nodes: int = 10
     ):
 
@@ -30,7 +31,10 @@ class GraphRetriever:
             return []
 
 
-        with relation_file.open("r") as f:
+        with relation_file.open(
+            "r",
+            encoding="utf-8"
+        ) as f:
 
             relations = json.load(f)
 
@@ -39,7 +43,6 @@ class GraphRetriever:
         visited = set(node_ids)
 
         results = []
-
 
         frontier = set(node_ids)
 
@@ -53,9 +56,20 @@ class GraphRetriever:
             for relation in relations:
 
 
+                # Ignore weak relationships
+                if relation.get(
+                    "weight",
+                    1.0
+                ) < min_weight:
+
+                    continue
+
+
+
                 source = relation["source"]
 
                 target = relation["target"]
+
 
 
                 if source in frontier:
@@ -71,11 +85,25 @@ class GraphRetriever:
 
                             {
                                 "node_id": target,
+
                                 "distance": depth,
-                                "relation": relation["relation"]
+
+                                "relation": relation["relation"],
+
+                                "weight": relation.get(
+                                    "weight",
+                                    1.0
+                                ),
+
+                                "confidence": relation.get(
+                                    "confidence",
+                                    1.0
+                                )
+
                             }
 
                         )
+
 
 
                 if target in frontier:
@@ -91,14 +119,35 @@ class GraphRetriever:
 
                             {
                                 "node_id": source,
+
                                 "distance": depth,
-                                "relation": relation["relation"]
+
+                                "relation": relation["relation"],
+
+                                "weight": relation.get(
+                                    "weight",
+                                    1.0
+                                ),
+
+                                "confidence": relation.get(
+                                    "confidence",
+                                    1.0
+                                )
+
                             }
 
                         )
 
 
+
             frontier = next_frontier
+
+
+
+            if not frontier:
+
+                break
+
 
 
         return results[:max_nodes]
