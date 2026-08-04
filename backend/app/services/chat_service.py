@@ -1,7 +1,6 @@
 from app.generation.generator import Generator
 from app.generation.prompt_builder import PromptBuilder
 from app.services.retrieval_service import RetrievalService
-from app.utils.slug import generate_ai_id
 
 
 class ChatService:
@@ -14,9 +13,12 @@ class ChatService:
 
         self.generator = Generator()
 
-    def ask(self, ai_name: str, question: str):
 
-        ai_id = generate_ai_id(ai_name)
+    def ask(
+        self,
+        ai_id: str,
+        question: str
+    ):
 
         contexts = self.retriever.retrieve(
 
@@ -26,6 +28,7 @@ class ChatService:
 
         )
 
+
         prompt = self.prompt_builder.build(
 
             question=question,
@@ -34,7 +37,11 @@ class ChatService:
 
         )
 
-        answer = self.generator.generate(prompt)
+
+        answer = self.generator.generate(
+            prompt
+        )
+
 
         return {
 
