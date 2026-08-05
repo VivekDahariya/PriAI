@@ -15,6 +15,38 @@ class RetrievalService:
         self.graph = GraphRetriever()
 
 
+
+    def calculate_vector_score(
+        self,
+        distance
+    ):
+
+        if distance is None:
+            return 0
+
+        return max(
+            0,
+            1 - distance
+        )
+
+
+
+    def calculate_graph_score(
+        self,
+        weight,
+        confidence
+    ):
+
+        if weight is None:
+            return 0
+
+        return (
+            weight *
+            confidence
+        )
+
+
+
     def retrieve(
         self,
         ai_id: str,
@@ -30,10 +62,12 @@ class RetrievalService:
         ).tolist()
 
 
+
         results = store.search(
             query_embedding=query_embedding,
             top_k=top_k
         )
+
 
 
         print("\n========== VECTOR RESULTS ==========")
@@ -44,11 +78,9 @@ class RetrievalService:
         print("====================================\n")
 
 
-        # -----------------------------
-        # Extract HKR nodes
-        # -----------------------------
 
         node_ids = []
+
 
         for result in results:
 
@@ -63,9 +95,6 @@ class RetrievalService:
                 )
 
 
-        # -----------------------------
-        # Weighted HKR Expansion
-        # -----------------------------
 
         expanded_nodes = []
 
@@ -79,6 +108,7 @@ class RetrievalService:
             )
 
 
+
         print("\n========== GRAPH EXPANSION ==========")
 
         for node in expanded_nodes:
@@ -87,10 +117,6 @@ class RetrievalService:
         print("====================================\n")
 
 
-        # -----------------------------
-        # Convert graph results
-        # into Chroma lookup IDs
-        # -----------------------------
 
         expanded_node_ids = [
 
@@ -99,6 +125,7 @@ class RetrievalService:
             for node in expanded_nodes
 
         ]
+
 
 
         graph_chunks = []
@@ -110,13 +137,6 @@ class RetrievalService:
                 expanded_node_ids
             )
 
-
-        print("\n========== GRAPH CHUNKS ==========")
-
-        for chunk in graph_chunks:
-            print(chunk)
-
-        print("====================================\n")
 
 
         retrieved = []
@@ -151,9 +171,15 @@ class RetrievalService:
             )
 
 
+            vector_score = self.calculate_vector_score(
+                result.get("distance")
+            )
+
+
             retrieved.append(
 
                 {
+
                     "text": result["text"],
 
                     "source": metadata.get(
@@ -170,6 +196,10 @@ class RetrievalService:
 
                     "hkr_node_id": node_id,
 
+                    "vector_score": vector_score,
+
+                    "retrieval_score": vector_score,
+
                     "from_graph": False,
 
                     "graph_context": expanded_nodes
@@ -181,7 +211,7 @@ class RetrievalService:
 
 
         # -----------------------------
-        # Graph Expanded Chunks
+        # Graph Results
         # -----------------------------
 
         for chunk in graph_chunks:
@@ -211,6 +241,21 @@ class RetrievalService:
             )
 
 
+
+            graph_score = self.calculate_graph_score(
+
+                graph_metadata.get(
+                    "weight"
+                ),
+
+                graph_metadata.get(
+                    "confidence"
+                )
+
+            )
+
+
+
             retrieved.append(
 
                 {
@@ -229,7 +274,6 @@ class RetrievalService:
 
                     "hkr_node_id": node_id,
 
-                    "from_graph": True,
 
                     "graph_relation": graph_metadata.get(
                         "relation"
@@ -243,11 +287,37 @@ class RetrievalService:
                         "confidence"
                     ),
 
+
+                    "graph_score": graph_score,
+
+
+                    "retrieval_score": graph_score,
+
+
+                    "from_graph": True,
+
                     "graph_context": expanded_nodes
 
                 }
 
             )
+
+
+
+        # -----------------------------
+        # Sort by intelligence score
+        # -----------------------------
+
+        retrieved.sort(
+
+            key=lambda x: x.get(
+                "retrieval_score",
+                0
+            ),
+
+            reverse=True
+
+        )
 
 
         return retrieved

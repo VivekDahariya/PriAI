@@ -57,6 +57,7 @@ class GraphRetriever:
 
 
                 # Ignore weak relationships
+
                 if relation.get(
                     "weight",
                     1.0
@@ -72,6 +73,41 @@ class GraphRetriever:
 
 
 
+                relation_data = {
+
+                    "distance": depth,
+
+                    "relation": relation.get(
+                        "relation"
+                    ),
+
+                    "weight": relation.get(
+                        "weight",
+                        1.0
+                    ),
+
+                    "confidence": relation.get(
+                        "confidence",
+                        1.0
+                    ),
+
+                    "source_type": relation.get(
+                        "source_type",
+                        "node"
+                    ),
+
+                    "target_type": relation.get(
+                        "target_type",
+                        "node"
+                    )
+
+                }
+
+
+
+                # Forward traversal
+                # source -> target
+
                 if source in frontier:
 
                     if target not in visited:
@@ -85,26 +121,15 @@ class GraphRetriever:
 
                             {
                                 "node_id": target,
-
-                                "distance": depth,
-
-                                "relation": relation["relation"],
-
-                                "weight": relation.get(
-                                    "weight",
-                                    1.0
-                                ),
-
-                                "confidence": relation.get(
-                                    "confidence",
-                                    1.0
-                                )
-
+                                **relation_data
                             }
 
                         )
 
 
+
+                # Reverse traversal
+                # target -> source
 
                 if target in frontier:
 
@@ -119,21 +144,7 @@ class GraphRetriever:
 
                             {
                                 "node_id": source,
-
-                                "distance": depth,
-
-                                "relation": relation["relation"],
-
-                                "weight": relation.get(
-                                    "weight",
-                                    1.0
-                                ),
-
-                                "confidence": relation.get(
-                                    "confidence",
-                                    1.0
-                                )
-
+                                **relation_data
                             }
 
                         )
