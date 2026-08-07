@@ -6,6 +6,8 @@ class KnowledgeChunk:
 
     id: str
 
+    knowledge_unit_id: str
+
     text: str
 
     source: str

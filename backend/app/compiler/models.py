@@ -3,6 +3,11 @@ from dataclasses import dataclass, field
 from app.hkr.models import MetadataNode
 from app.hkr.models import KnowledgeDocument
 
+from app.compiler.concept_models import (
+    ConceptNode,
+    ConceptRelation
+)
+
 
 @dataclass
 class KnowledgeUnit:
@@ -13,7 +18,21 @@ class KnowledgeUnit:
 
     hkr_node_id: str
 
-    metadata: dict = field(default_factory=dict)
+    parent_id: str | None = None
+
+    level: str = "chunk"
+
+    metadata: dict = field(
+        default_factory=dict
+    )
+
+    concepts: list[str] = field(
+        default_factory=list
+    )
+
+    entities: list[str] = field(
+        default_factory=list
+    )
 
     embedding: list[float] | None = None
 
@@ -21,9 +40,13 @@ class KnowledgeUnit:
 @dataclass
 class MetadataDictionary:
 
-    word_to_id: dict = field(default_factory=dict)
+    word_to_id: dict = field(
+        default_factory=dict
+    )
 
-    id_to_word: dict = field(default_factory=dict)
+    id_to_word: dict = field(
+        default_factory=dict
+    )
 
 
 @dataclass
@@ -35,13 +58,10 @@ class KnowledgeRelation:
 
     target: str
 
-    # Relationship strength
     weight: float = 1.0
 
-    # Extraction confidence
     confidence: float = 1.0
 
-    # Entity types
     source_type: str = "node"
 
     target_type: str = "node"
@@ -58,4 +78,14 @@ class CompiledKnowledge:
 
     units: list[KnowledgeUnit]
 
-    relations: list[KnowledgeRelation] = field(default_factory=list)
+    relations: list[KnowledgeRelation] = field(
+        default_factory=list
+    )
+
+    concepts: list[ConceptNode] = field(
+        default_factory=list
+    )
+
+    concept_relations: list[ConceptRelation] = field(
+        default_factory=list
+    )

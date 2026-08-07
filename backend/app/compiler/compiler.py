@@ -5,6 +5,9 @@ from app.compiler.models import (
 )
 
 from app.compiler.relation_builder import RelationBuilder
+from app.compiler.concept_builder import ConceptBuilder
+from app.compiler.concept_relation_builder import ConceptRelationBuilder
+from app.compiler.concept_extractor import ConceptExtractor
 
 from app.hkr.manager import HKRManager
 from app.hkr.dictionary import KnowledgeDictionary
@@ -20,10 +23,20 @@ class KnowledgeCompiler:
 
         self.relation_builder = RelationBuilder()
 
+        self.concept_builder = ConceptBuilder()
+
+        self.extractor = ConceptExtractor()
+
+        self.concept_relation_builder = ConceptRelationBuilder()
+
     def compile(
+
         self,
+
         document_name: str,
+
         chunks: list[str]
+
     ):
 
         document = self.hkr.create_document(
@@ -31,6 +44,9 @@ class KnowledgeCompiler:
         )
 
         units = []
+
+        # reset concept index
+        self.concept_builder = ConceptBuilder()
 
         for i, chunk in enumerate(chunks):
 
@@ -41,37 +57,96 @@ class KnowledgeCompiler:
                 level="page",
 
                 metadata={
+
                     "page": i + 1
+
                 }
+
+            )
+
+            chunk_node = self.hkr.add_child(
+
+                parent_id=page.id,
+
+                level="chunk",
+
+                metadata={
+
+                    "page": i + 1,
+
+                    "text": chunk
+
+                }
+
+            )
+
+            encoded_metadata = self.dictionary.encode_metadata(
+
+                {
+
+                    "document": document_name,
+
+                    "page": i + 1
+
+                }
+
+            )
+
+            concepts = self.extractor.extract(
+
+                chunk
+
+            )
+
+            unit = KnowledgeUnit(
+
+                id=f"KU{i+1}",
+
+                text=chunk,
+
+                hkr_node_id=chunk_node.id,
+
+                parent_id=page.id,
+
+                level="chunk",
+
+                metadata=encoded_metadata,
+
+                concepts=concepts
 
             )
 
             units.append(
 
-                KnowledgeUnit(
+                unit
 
-                    id=f"KU{i + 1}",
+            )
 
-                    text=chunk,
+            self.concept_builder.add_concepts(
 
-                    hkr_node_id=page.id,
+                chunk_id=unit.id,
 
-                    metadata=self.dictionary.encode_metadata(
-                        {
-                            "document": document_name,
-                            "page": i + 1
-                        }
-                    )
-
-                )
+                concepts=unit.concepts
 
             )
 
         relations = self.relation_builder.build(
+
             units
+
         )
 
-        compiled = CompiledKnowledge(
+        concepts = self.concept_builder.build()
+
+        concept_relations = self.concept_relation_builder.build(
+
+            concepts,
+
+            units
+
+        )
+
+        return CompiledKnowledge(
 
             document=document,
 
@@ -87,8 +162,10 @@ class KnowledgeCompiler:
 
             units=units,
 
-            relations=relations
+            relations=relations,
+
+            concepts=concepts,
+
+            concept_relations=concept_relations
 
         )
-
-        return compiled

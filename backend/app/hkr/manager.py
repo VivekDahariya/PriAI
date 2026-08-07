@@ -1,7 +1,8 @@
 import uuid
 
 from .models import MetadataNode, KnowledgeDocument
-
+from .storage import HKRStorage
+from .metadata_resolver import MetadataResolver
 
 
 class HKRManager:
@@ -9,10 +10,13 @@ class HKRManager:
 
     def __init__(self):
 
-        self.nodes = {}
+        self.storage = HKRStorage()
 
-        self.documents = {}
+        # Load existing memory
+        self.nodes = self.storage.load_nodes()
 
+        self.documents = self.storage.load_documents()
+        self.metadata_resolver = MetadataResolver(self)
 
 
     def create_document(self, name):
@@ -36,6 +40,7 @@ class HKRManager:
         self.nodes[root_id] = root
 
 
+
         document = KnowledgeDocument(
 
             id=str(uuid.uuid4()),
@@ -50,7 +55,11 @@ class HKRManager:
         self.documents[document.id] = document
 
 
+        self._persist()
+
+
         return document
+
 
 
 
@@ -81,36 +90,50 @@ class HKRManager:
         self.nodes[node_id] = node
 
 
-        self.nodes[parent_id].children.append(
-            node_id
-        )
+
+        if parent_id in self.nodes:
+
+            self.nodes[parent_id].children.append(
+                node_id
+            )
+
+
+        self._persist()
 
 
         return node
 
 
 
+
     def resolve_metadata(self,node_id):
 
-
-        result={}
-
-
-        current=node_id
+        return self.metadata_resolver.resolve(node_id)
 
 
-        while current:
 
 
-            node=self.nodes[current]
+    def get_node(self,node_id):
+
+        return self.nodes.get(node_id)
 
 
-            result.update(
-                node.metadata
-            )
 
 
-            current=node.parent_id
+    def get_document(self,document_id):
+
+        return self.documents.get(document_id)
 
 
-        return result
+
+
+    def _persist(self):
+
+        self.storage.save_nodes(
+            self.nodes
+        )
+
+
+        self.storage.save_documents(
+            self.documents
+        )

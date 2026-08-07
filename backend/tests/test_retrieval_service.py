@@ -3,7 +3,7 @@ from app.services.retrieval_service import RetrievalService
 service = RetrievalService()
 
 results = service.retrieve(
-    ai_id="Computer Science",
+    ai_id="computer_science",
     question="What is PriAI?"
 )
 
