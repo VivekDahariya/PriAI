@@ -49,4 +49,4 @@ results = store.search(
 
 print("\n🔍 Search Results:\n")
 
-print(results["documents"][0][0])
+print(results[0]["text"])

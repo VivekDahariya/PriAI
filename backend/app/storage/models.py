@@ -1,12 +1,11 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class KnowledgeChunk:
 
     id: str
-
-    knowledge_unit_id: str
 
     text: str
 
@@ -16,4 +15,6 @@ class KnowledgeChunk:
 
     embedding: list[float]
 
-    hkr_node_id: str | None = None
+    knowledge_unit_id: str = ""
+
+    hkr_node_id: Optional[str] = None
