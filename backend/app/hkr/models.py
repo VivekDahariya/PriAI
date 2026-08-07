@@ -104,3 +104,40 @@ class KnowledgeDocument:
             root_node=data["root_node"]
 
         )
+
+@dataclass
+class HKRNode:
+
+    id: str
+
+    node_type: str = "concept"
+
+    metadata: dict = field(
+        default_factory=dict
+    )
+
+    parent_id: Optional[str] = None
+
+    children: list[str] = field(
+        default_factory=list
+    )
+
+
+@dataclass
+class HKRChunk:
+
+    id: str
+
+    node_type: str = "chunk"
+
+    parent_id: Optional[str] = None
+
+    text: str = ""
+
+    metadata: dict = field(
+        default_factory=dict
+    )
+
+    children: list[str] = field(
+        default_factory=list
+    )
