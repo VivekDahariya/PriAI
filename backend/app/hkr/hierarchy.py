@@ -1,14 +1,12 @@
 from .models import MetadataNode
 
 
-
 class KnowledgeHierarchy:
 
 
     def __init__(self):
 
         self.root = None
-
 
 
     def create_book(
@@ -18,8 +16,11 @@ class KnowledgeHierarchy:
     ):
 
         self.root = MetadataNode(
+
             name=name,
+
             metadata=metadata
+
         )
 
         return self.root
@@ -33,11 +34,18 @@ class KnowledgeHierarchy:
     ):
 
         chapter = MetadataNode(
+
             name=name,
+
             metadata=metadata
+
         )
 
-        self.root.add_child(chapter)
+
+        self.root.add_child(
+            chapter
+        )
+
 
         return chapter
 
@@ -51,10 +59,17 @@ class KnowledgeHierarchy:
     ):
 
         page = MetadataNode(
+
             name=name,
+
             metadata=metadata
+
         )
 
-        chapter.add_child(page)
+
+        chapter.add_child(
+            page
+        )
+
 
         return page

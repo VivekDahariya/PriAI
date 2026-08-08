@@ -10,8 +10,9 @@ class HKRTree:
 
     def add_node(self, node: HKRNode):
 
+        node.tree = self
         self.nodes[node.id] = node
-
+     
 
     def get_node(self, node_id):
 

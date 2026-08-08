@@ -2,69 +2,56 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
-
 @dataclass
 class MetadataNode:
 
-    id: str
+    id: str = None
 
-    level: str
+    name: str = ""
 
     metadata: dict = field(
         default_factory=dict
     )
 
-    parent_id: Optional[str] = None
+    parent: Optional["MetadataNode"] = None
 
-    children: list[str] = field(
+    children: list = field(
         default_factory=list
     )
 
 
-    def to_dict(self):
+    def add_child(
+        self,
+        child
+    ):
 
-        return {
+        child.parent = self
 
-            "id": self.id,
-
-            "level": self.level,
-
-            "metadata": self.metadata,
-
-            "parent_id": self.parent_id,
-
-            "children": self.children
-
-        }
-
-
-
-    @staticmethod
-    def from_dict(data):
-
-        return MetadataNode(
-
-            id=data["id"],
-
-            level=data["level"],
-
-            metadata=data.get(
-                "metadata",
-                {}
-            ),
-
-            parent_id=data.get(
-                "parent_id"
-            ),
-
-            children=data.get(
-                "children",
-                []
-            )
-
+        self.children.append(
+            child
         )
 
 
+    def resolve_metadata(
+        self
+    ):
+
+        result = {}
+
+
+        if self.parent:
+
+            result.update(
+                self.parent.resolve_metadata()
+            )
+
+
+        result.update(
+            self.metadata
+        )
+
+
+        return result
 
 
 @dataclass
@@ -77,19 +64,17 @@ class KnowledgeDocument:
     root_node: str
 
 
-
     def to_dict(self):
 
         return {
 
-            "id":self.id,
+            "id": self.id,
 
-            "name":self.name,
+            "name": self.name,
 
-            "root_node":self.root_node
+            "root_node": self.root_node
 
         }
-
 
 
     @staticmethod
@@ -105,6 +90,8 @@ class KnowledgeDocument:
 
         )
 
+
+
 @dataclass
 class HKRNode:
 
@@ -112,14 +99,10 @@ class HKRNode:
 
     node_type: str = "concept"
 
-    metadata: dict = field(
-        default_factory=dict
-    )
-
     parent_id: Optional[str] = None
 
-    children: list[str] = field(
-        default_factory=list
+    metadata: dict = field(
+        default_factory=dict
     )
 
 
@@ -128,16 +111,12 @@ class HKRChunk:
 
     id: str
 
+    text: str
+
     node_type: str = "chunk"
 
     parent_id: Optional[str] = None
 
-    text: str = ""
-
     metadata: dict = field(
         default_factory=dict
-    )
-
-    children: list[str] = field(
-        default_factory=list
     )
