@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
+
 @dataclass
 class MetadataNode:
 
@@ -9,15 +10,20 @@ class MetadataNode:
 
     name: str = ""
 
+    level: str = ""
+
     metadata: dict = field(
         default_factory=dict
     )
 
     parent: Optional["MetadataNode"] = None
 
+    parent_id: Optional[str] = None
+
     children: list = field(
         default_factory=list
     )
+
 
 
     def add_child(
@@ -27,9 +33,12 @@ class MetadataNode:
 
         child.parent = self
 
+        child.parent_id = self.id
+
         self.children.append(
             child
         )
+
 
 
     def resolve_metadata(
@@ -54,6 +63,74 @@ class MetadataNode:
         return result
 
 
+
+    def to_dict(
+        self
+    ):
+
+        return {
+
+            "id": self.id,
+
+            "name": self.name,
+
+            "level": self.level,
+
+            "metadata": self.metadata,
+
+            "parent_id": self.parent_id,
+
+            "children": [
+
+                child.id
+
+                for child in self.children
+
+                if hasattr(
+                    child,
+                    "id"
+                )
+
+            ]
+
+        }
+
+
+
+    @staticmethod
+    def from_dict(
+        data
+    ):
+
+        return MetadataNode(
+
+            id=data.get(
+                "id"
+            ),
+
+            name=data.get(
+                "name",
+                ""
+            ),
+
+            level=data.get(
+                "level",
+                ""
+            ),
+
+            metadata=data.get(
+                "metadata",
+                {}
+            ),
+
+            parent_id=data.get(
+                "parent_id"
+            )
+
+        )
+
+
+
 @dataclass
 class KnowledgeDocument:
 
@@ -64,7 +141,10 @@ class KnowledgeDocument:
     root_node: str
 
 
-    def to_dict(self):
+
+    def to_dict(
+        self
+    ):
 
         return {
 
@@ -77,8 +157,11 @@ class KnowledgeDocument:
         }
 
 
+
     @staticmethod
-    def from_dict(data):
+    def from_dict(
+        data
+    ):
 
         return KnowledgeDocument(
 
@@ -104,6 +187,7 @@ class HKRNode:
     metadata: dict = field(
         default_factory=dict
     )
+
 
 
 @dataclass
