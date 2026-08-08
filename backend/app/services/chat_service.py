@@ -2,9 +2,7 @@ from app.generation.generator import Generator
 from app.generation.prompt_builder import PromptBuilder
 
 from app.services.retrieval_service import RetrievalService
-
-from app.runtime.context_builder import ContextBuilder
-
+from app.services.context_service import ContextService
 
 
 class ChatService:
@@ -14,7 +12,7 @@ class ChatService:
 
         self.retriever = RetrievalService()
 
-        self.context_builder = ContextBuilder()
+        self.context_service = ContextService()
 
         self.prompt_builder = PromptBuilder()
 
@@ -38,12 +36,11 @@ class ChatService:
         )
 
 
-        context = self.context_builder.build(
+        context = self.context_service.build_context(
 
             retrieved
 
         )
-
 
 
         prompt = self.prompt_builder.build(
@@ -55,11 +52,11 @@ class ChatService:
         )
 
 
-
         answer = self.generator.generate(
-            prompt
-        )
 
+            prompt
+
+        )
 
 
         return {

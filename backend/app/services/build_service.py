@@ -164,36 +164,12 @@ class BuildService:
             )
 
 
-            self.relation_store.save(
-
-                ai_id,
-
-                existing_relations + compiled.relations
-
-            )
-
-
-            # ----------------------------------------
-            # Save / Merge Concept Relations
-            # ----------------------------------------
-
-            existing_relations = self.concept_relation_store.load(
-
-                ai_id
-
-            )
-
-
             relation_keys = {
 
                 (
-
-                    r.source,
-
-                    r.target,
-
-                    r.relation
-
+                    r.get("source") if isinstance(r, dict) else r.source,
+                    r.get("target") if isinstance(r, dict) else r.target,
+                    r.get("relation") if isinstance(r, dict) else r.relation
                 )
 
                 for r in existing_relations
@@ -201,8 +177,7 @@ class BuildService:
             }
 
 
-            for relation in compiled.concept_relations:
-
+            for relation in compiled.relations:
 
                 key = (
 
@@ -218,6 +193,66 @@ class BuildService:
                 if key not in relation_keys:
 
                     existing_relations.append(
+                        relation
+                    )
+
+                    relation_keys.add(
+                        key
+                    )
+
+
+            self.relation_store.save(
+
+                ai_id,
+
+                existing_relations
+
+            )
+
+
+            # ----------------------------------------
+            # Save / Merge Concept Relations
+            # ----------------------------------------
+
+            existing_concept_relations = self.concept_relation_store.load(
+
+                ai_id
+
+            )
+
+
+            relation_keys = {
+
+                (
+                    r.source,
+
+                    r.target,
+
+                    r.relation
+
+                )
+
+                for r in existing_concept_relations
+
+            }
+
+
+            for relation in compiled.concept_relations:
+
+                key = (
+
+                    relation.source,
+
+                    relation.target,
+
+                    relation.relation
+
+                )
+
+
+                if key not in relation_keys:
+
+                    existing_concept_relations.append(
 
                         relation
 
@@ -234,7 +269,7 @@ class BuildService:
 
                 ai_id,
 
-                existing_relations
+                existing_concept_relations
 
             )
 

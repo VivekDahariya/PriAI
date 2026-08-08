@@ -27,7 +27,7 @@ class ConceptRetriever:
 
 
         # -----------------------------------
-        # Normalize stored concepts
+        # Normalize Stored Concepts
         # -----------------------------------
 
         concept_map = {}
@@ -61,11 +61,9 @@ class ConceptRetriever:
                 chunk_ids = concept.chunk_ids
 
 
-
             if not concept_id or not name:
 
                 continue
-
 
 
             normalized = {
@@ -79,7 +77,6 @@ class ConceptRetriever:
             }
 
 
-
             concept_map[name.lower()] = normalized
 
             concept_id_map[concept_id] = normalized
@@ -87,29 +84,23 @@ class ConceptRetriever:
 
 
         # -----------------------------------
-        # Concept Matching
+        # Direct Concept Matching
         # -----------------------------------
 
         matched_concepts = set()
 
         matched_scores = {}
 
-        matched_chunks = set()
-
 
 
         for query in query_concepts:
 
-
             query_lower = query.lower()
-
 
 
             for name, concept in concept_map.items():
 
-
                 score = 0
-
 
 
                 if name == query_lower:
@@ -130,7 +121,6 @@ class ConceptRetriever:
 
                 if score > 0:
 
-
                     concept_id = concept["id"]
 
 
@@ -149,13 +139,6 @@ class ConceptRetriever:
                         ),
 
                         score
-
-                    )
-
-
-                    matched_chunks.update(
-
-                        concept["chunk_ids"]
 
                     )
 
@@ -198,7 +181,6 @@ class ConceptRetriever:
                     "confidence",
                     1.0
                 )
-
 
             else:
 
@@ -244,7 +226,6 @@ class ConceptRetriever:
                 )
 
 
-
             elif target in matched_concepts:
 
 
@@ -269,11 +250,10 @@ class ConceptRetriever:
 
 
         # -----------------------------------
-        # Collect Expanded Concept Chunks
+        # Collect Knowledge Units
         # -----------------------------------
 
-        final_results = []
-
+        results = []
 
         seen_chunks = set()
 
@@ -295,7 +275,7 @@ class ConceptRetriever:
 
 
 
-            score = max(
+            concept_score = max(
 
                 matched_scores.get(
 
@@ -316,14 +296,12 @@ class ConceptRetriever:
             )
 
 
-
             for chunk_id in concept["chunk_ids"]:
 
 
                 if chunk_id in seen_chunks:
 
                     continue
-
 
 
                 seen_chunks.add(
@@ -333,7 +311,7 @@ class ConceptRetriever:
                 )
 
 
-                final_results.append(
+                results.append(
 
                     {
 
@@ -341,7 +319,7 @@ class ConceptRetriever:
                             chunk_id,
 
                         "concept_score":
-                            score,
+                            concept_score,
 
                         "matched_concepts":
                             [
@@ -354,4 +332,4 @@ class ConceptRetriever:
 
 
 
-        return final_results
+        return results

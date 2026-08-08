@@ -120,7 +120,7 @@ class RetrievalService:
 
 
         # -----------------------------------
-        # Merge Concept Results
+        # Merge Concept + Vector Results
         # -----------------------------------
 
         existing_units = {
@@ -136,8 +136,12 @@ class RetrievalService:
 
         for chunk in concept_chunks:
 
+            knowledge_unit_id = chunk.get(
+                "knowledge_unit_id"
+            )
 
-            if chunk["knowledge_unit_id"] in existing_units:
+
+            if knowledge_unit_id in existing_units:
 
                 continue
 
@@ -150,47 +154,37 @@ class RetrievalService:
 
                     "metadata": {
 
-                        "source": chunk["source"],
+                        "source": chunk.get(
+                            "source"
+                        ),
 
-                        "chunk": chunk["chunk"],
+                        "chunk": chunk.get(
+                            "chunk"
+                        ),
 
                         "knowledge_unit_id":
-                            chunk["knowledge_unit_id"],
+                            knowledge_unit_id,
 
                         "hkr_node":
-                            chunk["hkr_node_id"]
+                            chunk.get(
+                                "hkr_node_id"
+                            )
 
                     },
 
-
                     "distance": 0.20,
 
-
                     "hkr_node_id":
-                        chunk["hkr_node_id"],
-
+                        chunk.get(
+                            "hkr_node_id"
+                        ),
 
                     "knowledge_unit_id":
-                        chunk["knowledge_unit_id"]
+                        knowledge_unit_id
 
                 }
 
             )
-
-
-        print(
-            "\n========== VECTOR + CONCEPT RESULTS =========="
-        )
-
-
-        for result in results:
-
-            print(result)
-
-
-        print(
-            "==============================================\n"
-        )
 
 
         # -----------------------------------
@@ -232,21 +226,6 @@ class RetrievalService:
             )
 
 
-        print(
-            "\n========== GRAPH EXPANSION =========="
-        )
-
-
-        for node in expanded_nodes:
-
-            print(node)
-
-
-        print(
-            "====================================\n"
-        )
-
-
         expanded_node_ids = [
 
             node["node_id"]
@@ -270,7 +249,6 @@ class RetrievalService:
 
         retrieved = []
 
-
         existing_nodes = set()
 
 
@@ -279,7 +257,6 @@ class RetrievalService:
         # -----------------------------------
 
         for result in results:
-
 
             node_id = result.get(
                 "hkr_node_id"
@@ -312,41 +289,36 @@ class RetrievalService:
 
                 {
 
-                    "text": result["text"],
-
+                    "text": result.get(
+                        "text",
+                        ""
+                    ),
 
                     "source": metadata.get(
                         "source"
                     ),
 
-
                     "chunk": metadata.get(
                         "chunk"
                     ),
 
-
                     "distance": result.get(
                         "distance"
                     ),
-
 
                     "knowledge_unit_id":
                         result.get(
                             "knowledge_unit_id"
                         ),
 
-
                     "hkr_node_id":
                         node_id,
-
 
                     "vector_score":
                         vector_score,
 
-
                     "retrieval_score":
                         vector_score,
-
 
                     "from_graph":
                         False
@@ -361,7 +333,6 @@ class RetrievalService:
         # -----------------------------------
 
         for chunk in graph_chunks:
-
 
             node_id = chunk.get(
                 "hkr_node_id"
@@ -407,62 +378,53 @@ class RetrievalService:
 
                 {
 
-                    "text": chunk["text"],
-
+                    "text": chunk.get(
+                        "text",
+                        ""
+                    ),
 
                     "source": chunk.get(
                         "source"
                     ),
 
-
                     "chunk": chunk.get(
                         "chunk"
                     ),
-
 
                     "knowledge_unit_id":
                         chunk.get(
                             "knowledge_unit_id"
                         ),
 
-
                     "distance":
                         None,
 
-
                     "hkr_node_id":
                         node_id,
-
 
                     "graph_relation":
                         graph_metadata.get(
                             "relation"
                         ),
 
-
                     "graph_weight":
                         graph_metadata.get(
                             "weight"
                         ),
-
 
                     "graph_confidence":
                         graph_metadata.get(
                             "confidence"
                         ),
 
-
                     "graph_score":
                         graph_score,
-
 
                     "retrieval_score":
                         graph_score,
 
-
                     "from_graph":
                         True,
-
 
                     "graph_context":
                         expanded_nodes

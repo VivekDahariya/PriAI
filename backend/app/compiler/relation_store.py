@@ -28,19 +28,19 @@ class RelationStore:
         data = [
 
             {
-                "source": r.source,
+                "source": r.get("source") if isinstance(r, dict) else r.source,
 
-                "relation": r.relation,
+                "target": r.get("target") if isinstance(r, dict) else r.target,
 
-                "target": r.target,
+                "relation": r.get("relation") if isinstance(r, dict) else r.relation,
 
-                "weight": r.weight,
+                "weight": r.get("weight", 1.0) if isinstance(r, dict) else r.weight,
 
-                "confidence": r.confidence,
+                "confidence": r.get("confidence", 1.0) if isinstance(r, dict) else r.confidence,
 
-                "source_type": r.source_type,
+                "source_type": r.get("source_type", "unknown") if isinstance(r, dict) else r.source_type,
 
-                "target_type": r.target_type
+                "target_type": r.get("target_type", "unknown") if isinstance(r, dict) else r.target_type
             }
 
             for r in relations
